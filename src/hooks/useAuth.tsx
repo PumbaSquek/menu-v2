@@ -20,6 +20,12 @@ const DEFAULT_USERS = [
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [users] = useLocalStorage('trattoria_users', DEFAULT_USERS);
   const [currentUser, setCurrentUser] = useLocalStorage<User | null>('trattoria_current_user', null);
+  
+  // Check if we're in an iframe and provide demo mode
+  const isInIframe = window !== window.parent;
+  
+  console.log('[AuthProvider] In iframe:', isInIframe);
+  console.log('[AuthProvider] Current user:', currentUser);
 
   const login = (username: string, password: string): boolean => {
     const user = users.find(u => u.username === username && u.password === password);
@@ -40,11 +46,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCurrentUser(null);
   };
 
+  // In iframe mode, provide a demo user to bypass localStorage issues
+  const demoUser: User = {
+    id: 'demo',
+    username: 'demo',
+    name: 'Demo User',
+    lastLogin: new Date().toISOString()
+  };
+
   const value = {
-    user: currentUser,
+    user: isInIframe ? demoUser : currentUser,
     login,
     logout,
-    isAuthenticated: !!currentUser
+    isAuthenticated: isInIframe ? true : !!currentUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

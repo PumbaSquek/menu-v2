@@ -5,6 +5,7 @@ import { Header } from '@/components/Header';
 import { AppSidebar } from '@/components/AppSidebar';
 import { MenuBuilder } from '@/components/MenuBuilder';
 import { Toaster } from '@/components/ui/toaster';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Dish } from '@/types';
 
 function AppContent() {
@@ -54,10 +55,12 @@ function AppContent() {
 
 const Index = () => {
   return (
-    <AuthProvider>
-      <AppContent />
-      <Toaster />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppContent />
+        <Toaster />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 };
 
