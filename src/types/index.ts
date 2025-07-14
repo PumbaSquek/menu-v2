@@ -37,6 +37,6 @@ export const DISH_CATEGORIES: { key: DishCategory; label: string }[] = [
   { key: 'secondi', label: 'Secondi Piatti' },
   { key: 'contorni', label: 'Contorni' },
   { key: 'dolci', label: 'Dolci' },
-  { key: 'caffetteria', label: 'Caffetteria' },
+  { key: 'caffetteria', label: 'Amari e Caffetteria' },
   { key: 'bevande', label: 'Bevande' },
 ];
