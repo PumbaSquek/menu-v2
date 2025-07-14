@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, Trash2, Euro } from 'lucide-react';
 import { Dish, DishCategory, DISH_CATEGORIES } from '@/types';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { SAMPLE_DISHES } from '@/data/sampleDishes';
 import { useToast } from '@/hooks/use-toast';
 
 interface AppSidebarProps {
@@ -17,7 +17,8 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
-  const [dishes, setDishes] = useLocalStorage<Dish[]>('trattoria_dishes', []);
+  const [dishes, setDishes] = useState<Dish[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newDish, setNewDish] = useState({
     name: '',
@@ -26,6 +27,38 @@ export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
     category: 'antipasti' as DishCategory,
   });
   const { toast } = useToast();
+
+  // Load dishes after component mounts
+  useEffect(() => {
+    const loadDishes = () => {
+      try {
+        const saved = localStorage.getItem('trattoria_dishes');
+        if (saved) {
+          setDishes(JSON.parse(saved));
+        } else {
+          // Load sample dishes if none exist
+          setDishes(SAMPLE_DISHES);
+          localStorage.setItem('trattoria_dishes', JSON.stringify(SAMPLE_DISHES));
+        }
+      } catch (err) {
+        console.error('Error loading dishes:', err);
+        setDishes(SAMPLE_DISHES);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDishes();
+  }, []);
+
+  const saveDishes = (updatedDishes: Dish[]) => {
+    setDishes(updatedDishes);
+    try {
+      localStorage.setItem('trattoria_dishes', JSON.stringify(updatedDishes));
+    } catch (err) {
+      console.error('Error saving dishes:', err);
+    }
+  };
 
   const handleAddDish = () => {
     if (!newDish.name || !newDish.price) {
