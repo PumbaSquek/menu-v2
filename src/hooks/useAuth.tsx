@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/types';
-import { useFileStorage } from '@/hooks/useFileStorage';
 
 interface AuthContextType {
   user: User | null;
@@ -17,14 +16,40 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const isInIframe = window !== window.parent;
   
-  // Use file storage hooks with error handling
-  const [users, setUsers, { loading: usersLoading, error: usersError }] = useFileStorage<User[]>('users', []);
-  const [currentUser, setCurrentUser, { loading: currentUserLoading, error: currentUserError }] = useFileStorage<User | null>('current_user', null);
-  
-  const loading = usersLoading || currentUserLoading;
-  const error = usersError || currentUserError;
-  
-  console.log('[AuthProvider] State:', { users: users?.length, currentUser: currentUser?.username, loading, error });
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load data on mount
+  useEffect(() => {
+    const loadData = () => {
+      try {
+        if (isInIframe) {
+          setLoading(false);
+          return;
+        }
+
+        const savedUsers = localStorage.getItem('trattoria_users');
+        const savedCurrentUser = localStorage.getItem('trattoria_current_user');
+        
+        if (savedUsers) {
+          setUsers(JSON.parse(savedUsers));
+        }
+        
+        if (savedCurrentUser) {
+          setCurrentUser(JSON.parse(savedCurrentUser));
+        }
+      } catch (err) {
+        console.error('Error loading data:', err);
+        setError('Failed to load user data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [isInIframe]);
 
   const login = async (username: string, password: string): Promise<boolean> => {
     const user = users.find(u => u.username === username);
@@ -35,7 +60,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: user.name,
         lastLogin: new Date().toISOString()
       };
-      await setCurrentUser(loggedUser);
+      setCurrentUser(loggedUser);
+      
+      try {
+        localStorage.setItem('trattoria_current_user', JSON.stringify(loggedUser));
+      } catch (err) {
+        console.error('Error saving current user:', err);
+      }
+      
       return true;
     }
     return false;
@@ -43,7 +75,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (newUser: User): Promise<void> => {
     const updatedUsers = [...users, newUser];
-    await setUsers(updatedUsers);
+    setUsers(updatedUsers);
+    
+    try {
+      localStorage.setItem('trattoria_users', JSON.stringify(updatedUsers));
+    } catch (err) {
+      console.error('Error saving users:', err);
+    }
     
     // Auto-login after registration
     const loggedUser: User = {
@@ -52,11 +90,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       name: newUser.name,
       lastLogin: new Date().toISOString()
     };
-    await setCurrentUser(loggedUser);
+    setCurrentUser(loggedUser);
+    
+    try {
+      localStorage.setItem('trattoria_current_user', JSON.stringify(loggedUser));
+    } catch (err) {
+      console.error('Error saving current user:', err);
+    }
   };
 
-  const logout = async () => {
-    await setCurrentUser(null);
+  const logout = () => {
+    setCurrentUser(null);
+    try {
+      localStorage.removeItem('trattoria_current_user');
+    } catch (err) {
+      console.error('Error removing current user:', err);
+    }
   };
 
   // In iframe mode, provide a demo user to bypass storage issues
@@ -77,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     error
   };
 
-  // Don't render children until the provider is ready (except in iframe)
+  // Don't render children until loaded (except in iframe)
   if (!isInIframe && loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

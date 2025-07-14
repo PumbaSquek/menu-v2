@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +10,6 @@ import { Plus, Trash2, Euro } from 'lucide-react';
 import { Dish, DishCategory, DISH_CATEGORIES } from '@/types';
 import { SAMPLE_DISHES } from '@/data/sampleDishes';
 import { useToast } from '@/hooks/use-toast';
-import { useFileStorage } from '@/hooks/useFileStorage';
 
 interface AppSidebarProps {
   onDishSelect: (dish: Dish) => void;
@@ -18,9 +17,8 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
-  // Use file storage for dishes, default to sample dishes
-  const [dishes, setDishes, { loading }] = useFileStorage<Dish[]>('dishes', SAMPLE_DISHES);
-  
+  const [dishes, setDishes] = useState<Dish[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newDish, setNewDish] = useState({
     name: '',
@@ -30,7 +28,38 @@ export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
   });
   const { toast } = useToast();
 
-  const handleAddDish = async () => {
+  // Load dishes on mount
+  useEffect(() => {
+    const loadDishes = () => {
+      try {
+        const saved = localStorage.getItem('trattoria_dishes');
+        if (saved) {
+          setDishes(JSON.parse(saved));
+        } else {
+          setDishes(SAMPLE_DISHES);
+          localStorage.setItem('trattoria_dishes', JSON.stringify(SAMPLE_DISHES));
+        }
+      } catch (err) {
+        console.error('Error loading dishes:', err);
+        setDishes(SAMPLE_DISHES);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDishes();
+  }, []);
+
+  const saveDishes = (updatedDishes: Dish[]) => {
+    setDishes(updatedDishes);
+    try {
+      localStorage.setItem('trattoria_dishes', JSON.stringify(updatedDishes));
+    } catch (err) {
+      console.error('Error saving dishes:', err);
+    }
+  };
+
+  const handleAddDish = () => {
     if (!newDish.name || !newDish.price) {
       toast({
         variant: "destructive",
@@ -51,7 +80,7 @@ export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
     };
 
     const updatedDishes = [...dishes, dish];
-    await setDishes(updatedDishes);
+    saveDishes(updatedDishes);
     setNewDish({ name: '', description: '', price: '', category: 'antipasti' });
     setIsAddDialogOpen(false);
     
@@ -61,9 +90,9 @@ export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
     });
   };
 
-  const handleRemoveDish = async (dishId: string) => {
+  const handleRemoveDish = (dishId: string) => {
     const updatedDishes = dishes.filter(d => d.id !== dishId);
-    await setDishes(updatedDishes);
+    saveDishes(updatedDishes);
     toast({
       title: "Piatto rimosso",
       description: "Il piatto è stato rimosso dal database",
