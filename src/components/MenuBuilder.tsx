@@ -41,26 +41,26 @@ export function MenuBuilder({
         <head>
           <title>Menu del Giorno - Da Zia Lina</title>
           <style>
-            body { font-family: 'Georgia', serif; margin: 20px; background: #faf9f7; color: #5d4e37; }
-            .menu-header { text-align: center; margin-bottom: 40px; border: 4px double #b8860b; padding: 30px; background: linear-gradient(135deg, #fdf9f3, #f9f1e6); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-            .menu-title { font-size: 40px; font-weight: bold; color: #5d4e37; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); letter-spacing: 2px; }
-            .restaurant-name { font-size: 28px; font-weight: bold; color: #b8860b; margin-bottom: 15px; font-style: italic; }
-            .restaurant-address { font-size: 16px; color: #8b7355; margin-bottom: 15px; font-weight: 500; }
-            .menu-date { font-size: 16px; color: #8b7355; background: #f5f5dc; padding: 8px 15px; border-radius: 20px; display: inline-block; border: 1px solid #b8860b; }
-            .category { margin-bottom: 35px; background: #fdfcfa; padding: 25px; border-radius: 12px; border: 1px solid #e8dcc0; }
-            .category-title { font-size: 26px; font-weight: bold; color: #5d4e37; text-align: center; margin-bottom: 25px; position: relative; padding: 15px 0; background: linear-gradient(135deg, #f9f6f0, #f5f2ea); border-radius: 8px; border: 1px solid #b8860b; }
-            .category-title:before, .category-title:after { content: '🌿'; font-size: 18px; position: absolute; top: 50%; transform: translateY(-50%); }
+            body { font-family: 'Georgia', serif; margin: 15px; background: #faf9f7; color: #5d4e37; font-size: 14px; }
+            .menu-header { text-align: center; margin-bottom: 15px; border: 2px double #b8860b; padding: 15px; background: linear-gradient(135deg, #fdf9f3, #f9f1e6); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+            .menu-title { font-size: 24px; font-weight: bold; color: #5d4e37; margin-bottom: 5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); letter-spacing: 1px; }
+            .restaurant-name { font-size: 18px; font-weight: bold; color: #b8860b; margin-bottom: 8px; font-style: italic; }
+            .restaurant-address { font-size: 12px; color: #8b7355; margin-bottom: 8px; font-weight: 500; }
+            .menu-date { font-size: 11px; color: #8b7355; background: #f5f5dc; padding: 4px 8px; border-radius: 12px; display: inline-block; border: 1px solid #b8860b; }
+            .category { margin-bottom: 15px; background: #fdfcfa; padding: 12px; border-radius: 6px; border: 1px solid #e8dcc0; }
+            .category-title { font-size: 16px; font-weight: bold; color: #5d4e37; text-align: center; margin-bottom: 8px; position: relative; padding: 8px 0; background: linear-gradient(135deg, #f9f6f0, #f5f2ea); border-radius: 4px; border: 1px solid #b8860b; }
+            .category-title:before, .category-title:after { content: '🌿'; font-size: 12px; position: absolute; top: 50%; transform: translateY(-50%); }
             .category-title:before { left: 15%; }
             .category-title:after { right: 15%; }
-            .dish { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding: 15px 0; border-bottom: 2px dotted #b8860b; }
+            .dish { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; padding: 6px 0; border-bottom: 1px dotted #b8860b; }
             .dish:last-child { border-bottom: none; }
             .dish-info { flex: 1; }
-            .dish-name { font-weight: bold; font-size: 20px; color: #5d4e37; margin-bottom: 8px; line-height: 1.3; }
-            .dish-description { font-size: 16px; color: #8b7355; margin-top: 5px; font-style: italic; line-height: 1.5; }
-            .dish-price { font-weight: bold; color: #b8860b; font-size: 20px; background: #fdf9f3; padding: 8px 15px; border-radius: 20px; border: 2px solid #b8860b; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-            .menu-footer { margin-top: 50px; text-align: center; font-size: 14px; color: #8b7355; border-top: 3px solid #b8860b; padding-top: 25px; background: #fdf9f3; border-radius: 10px; padding: 25px; }
+            .dish-name { font-weight: bold; font-size: 14px; color: #5d4e37; margin-bottom: 3px; line-height: 1.2; }
+            .dish-description { font-size: 11px; color: #8b7355; margin-top: 2px; font-style: italic; line-height: 1.3; }
+            .dish-price { font-weight: bold; color: #b8860b; font-size: 14px; background: #fdf9f3; padding: 4px 8px; border-radius: 12px; border: 1px solid #b8860b; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+            .menu-footer { margin-top: 20px; text-align: center; font-size: 11px; color: #8b7355; border-top: 2px solid #b8860b; padding-top: 15px; background: #fdf9f3; border-radius: 6px; padding: 15px; }
             .no-print { display: none !important; }
-            .decorative-line { height: 2px; background: linear-gradient(to right, transparent, #b8860b, transparent); margin: 15px 0; }
+            .decorative-line { height: 1px; background: linear-gradient(to right, transparent, #b8860b, transparent); margin: 8px 0; }
           </style>
         </head>
         <body>
@@ -121,23 +121,23 @@ export function MenuBuilder({
             </div>
           ) : (
             <div id="menu-preview" className="bg-card">
-              <div className="menu-header mb-8 text-center bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 p-10 rounded-2xl border-2 border-primary/20 shadow-lg">
-                <div className="text-5xl mb-6">🍝</div>
-                <div className="border-4 border-double border-accent/40 p-6 rounded-xl bg-card/50">
-                  <h1 className="menu-title text-5xl font-bold text-primary mb-4 font-serif tracking-wide">
+              <div className="menu-header mb-4 text-center bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 p-4 rounded-lg border border-primary/20 shadow-sm">
+                <div className="text-2xl mb-2">🍝</div>
+                <div className="border-2 border-double border-accent/40 p-3 rounded-lg bg-card/50">
+                  <h1 className="menu-title text-2xl font-bold text-primary mb-2 font-serif tracking-wide">
                     Menu del Giorno
                   </h1>
-                  <div className="flex items-center justify-center gap-3 mb-4">
-                    <div className="w-16 h-px bg-accent/60"></div>
-                    <div className="text-2xl">🌿</div>
-                    <div className="w-16 h-px bg-accent/60"></div>
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className="w-8 h-px bg-accent/60"></div>
+                    <div className="text-sm">🌿</div>
+                    <div className="w-8 h-px bg-accent/60"></div>
                   </div>
-                  <h2 className="restaurant-name text-3xl font-bold text-accent mb-4 italic">Da Zia Lina</h2>
-                  <p className="restaurant-address text-base text-muted-foreground mb-6 font-medium">
+                  <h2 className="restaurant-name text-lg font-bold text-accent mb-2 italic">Da Zia Lina</h2>
+                  <p className="restaurant-address text-xs text-muted-foreground mb-2 font-medium">
                     Via Spogliatore, 89900 Vibo Valentia VV
                   </p>
-                  <div className="menu-date flex items-center justify-center gap-2 text-muted-foreground bg-muted/50 px-6 py-3 rounded-full border border-primary/20">
-                    <Calendar className="h-4 w-4" />
+                  <div className="menu-date flex items-center justify-center gap-1 text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-full border border-primary/20">
+                    <Calendar className="h-3 w-3" />
                     {new Date().toLocaleDateString('it-IT', {
                       weekday: 'long',
                       year: 'numeric',
@@ -148,46 +148,46 @@ export function MenuBuilder({
                 </div>
               </div>
 
-              <div className="space-y-10">
+              <div className="space-y-4">
                 {DISH_CATEGORIES.map(category => {
                   const categoryDishes = getDishesForCategory(category.key);
                   if (categoryDishes.length === 0) return null;
                   
                   return (
                     <div key={category.key} className="category">
-                      <div className="relative mb-8">
-                        <div className="flex items-center justify-center mb-4">
-                          <div className="w-20 h-px bg-gradient-to-r from-transparent via-accent to-transparent"></div>
-                          <div className="mx-4 text-2xl">🌿</div>
-                          <div className="w-20 h-px bg-gradient-to-r from-transparent via-accent to-transparent"></div>
+                      <div className="relative mb-2">
+                        <div className="flex items-center justify-center mb-1">
+                          <div className="w-12 h-px bg-gradient-to-r from-transparent via-accent to-transparent"></div>
+                          <div className="mx-2 text-sm">🌿</div>
+                          <div className="w-12 h-px bg-gradient-to-r from-transparent via-accent to-transparent"></div>
                         </div>
-                        <h3 className="category-title text-3xl font-bold text-primary text-center py-4 relative bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-xl border border-primary/20">
+                        <h3 className="category-title text-lg font-bold text-primary text-center py-2 relative bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-lg border border-primary/20">
                           {category.label}
                         </h3>
                       </div>
-                      <div className="bg-card/50 p-6 rounded-xl border border-primary/10 shadow-sm">
-                        <div className="space-y-4">
+                      <div className="bg-card/50 p-3 rounded-lg border border-primary/10 shadow-sm">
+                        <div className="space-y-2">
                           {categoryDishes.map(dish => (
-                            <div key={dish.id} className="dish flex justify-between items-start group py-5 border-b border-dotted border-accent/40 last:border-b-0 hover:bg-muted/30 transition-colors rounded-lg px-2">
-                              <div className="dish-info flex-1 pr-6">
-                                <h4 className="dish-name font-bold text-xl text-primary mb-2 font-serif leading-tight">{dish.name}</h4>
+                            <div key={dish.id} className="dish flex justify-between items-start group py-2 border-b border-dotted border-accent/40 last:border-b-0 hover:bg-muted/30 transition-colors rounded px-1">
+                              <div className="dish-info flex-1 pr-3">
+                                <h4 className="dish-name font-bold text-sm text-primary mb-1 font-serif leading-tight">{dish.name}</h4>
                                 {dish.description && (
-                                  <p className="dish-description text-muted-foreground mt-2 italic leading-relaxed text-base">
+                                  <p className="dish-description text-muted-foreground text-xs italic leading-relaxed">
                                     {dish.description}
                                   </p>
                                 )}
                               </div>
-                              <div className="flex items-center gap-3">
-                                <span className="dish-price font-bold text-accent text-xl bg-accent/15 px-4 py-2 rounded-full border-2 border-accent/30 shadow-sm">
+                              <div className="flex items-center gap-2">
+                                <span className="dish-price font-bold text-accent text-sm bg-accent/15 px-2 py-1 rounded-full border border-accent/30 shadow-sm">
                                   €{dish.price.toFixed(2)}
                                 </span>
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
                                   onClick={() => onRemoveDish(dish.id)} 
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0 text-destructive hover:text-destructive no-print"
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 text-destructive hover:text-destructive no-print"
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-3 w-3" />
                                 </Button>
                               </div>
                             </div>
