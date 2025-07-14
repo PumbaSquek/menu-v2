@@ -23,6 +23,12 @@ export function MenuBuilder({
   const handlePrintMenu = () => {
     const printContent = document.getElementById('menu-preview');
     if (!printContent) return;
+    
+    // Clone the content and remove trash buttons
+    const clonedContent = printContent.cloneNode(true) as HTMLElement;
+    const trashButtons = clonedContent.querySelectorAll('.no-print');
+    trashButtons.forEach(button => button.remove());
+    
     const printWindow = window.open('', '', 'height=600,width=800');
     if (!printWindow) return;
     printWindow.document.write(`
@@ -48,10 +54,11 @@ export function MenuBuilder({
             .dish-description { font-size: 15px; color: #666; margin-top: 3px; font-style: italic; line-height: 1.4; }
             .dish-price { font-weight: bold; color: #d4a574; font-size: 18px; background: #fdf9f3; padding: 5px 10px; border-radius: 15px; border: 1px solid #d4a574; }
             .menu-footer { margin-top: 40px; text-align: center; font-size: 14px; color: #666; border-top: 2px solid #d4a574; padding-top: 20px; background: #fdf9f3; border-radius: 8px; padding: 20px; }
+            .no-print { display: none !important; }
           </style>
         </head>
         <body>
-          ${printContent.innerHTML}
+          ${clonedContent.innerHTML}
           <div class="menu-footer">
             <p><strong>Da Zia Lina</strong><br/>Via Spogliatore, 89900 Vibo Valentia VV</p>
             <p>Menu generato il ${new Date().toLocaleDateString('it-IT')}</p>
@@ -179,7 +186,7 @@ export function MenuBuilder({
                               <span className="dish-price font-bold text-accent text-lg bg-accent/10 px-3 py-1 rounded-full border border-accent/30">
                                 €{dish.price.toFixed(2)}
                               </span>
-                              <Button variant="ghost" size="sm" onClick={() => onRemoveDish(dish.id)} className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0 text-destructive hover:text-destructive print:hidden">
+                              <Button variant="ghost" size="sm" onClick={() => onRemoveDish(dish.id)} className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0 text-destructive hover:text-destructive print:!hidden no-print">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
