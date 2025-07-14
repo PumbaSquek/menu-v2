@@ -41,24 +41,23 @@ export function MenuBuilder({
         <head>
           <title>Menu del Giorno - Da Zia Lina</title>
           <style>
-            body { font-family: 'Georgia', serif; margin: 15px; background: #faf9f7; color: #5d4e37; font-size: 14px; max-width: 800px; margin: 0 auto; padding: 15px; }
-            .menu-header { text-align: center; margin-bottom: 20px; border: 2px double #b8860b; padding: 20px; background: linear-gradient(135deg, #fdf9f3, #f9f1e6); border-radius: 8px; }
-            .menu-title { font-size: 28px; font-weight: bold; color: #5d4e37; margin-bottom: 5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); letter-spacing: 1px; }
-            .restaurant-name { font-size: 20px; font-weight: bold; color: #b8860b; margin-bottom: 8px; font-style: italic; }
-            .restaurant-address { font-size: 14px; color: #8b7355; margin-bottom: 10px; font-weight: 500; }
-            .menu-date { font-size: 12px; color: #8b7355; background: #f5f5dc; padding: 6px 12px; border-radius: 15px; display: inline-block; border: 1px solid #b8860b; }
-            .category { margin-bottom: 20px; }
-            .category-title { font-size: 16px; font-weight: bold; color: #5d4e37; font-style: italic; margin-bottom: 8px; }
-            .dish { margin-bottom: 8px; padding: 4px 0; margin-left: 15px; }
-            .dish-info { display: flex; align-items: baseline; gap: 8px; }
-            .dish-name { font-weight: 600; font-size: 14px; color: #5d4e37; }
-            .dish-description { font-size: 11px; color: #8b7355; font-style: italic; line-height: 1.3; margin-top: 2px; margin-left: 15px; }
-            .dish-price { font-weight: bold; color: #b8860b; font-size: 14px; }
-            .dotted-line { flex: 1; border-bottom: 1px dotted #b8860b; margin-bottom: 2px; }
-            .category-line { height: 1px; background: #b8860b; opacity: 0.4; margin: 8px 0; }
-            .menu-footer { margin-top: 25px; text-align: center; font-size: 11px; color: #8b7355; border-top: 2px solid #b8860b; padding-top: 15px; background: #fdf9f3; border-radius: 6px; padding: 15px; }
+            body { font-family: 'Georgia', serif; margin: 10px; background: #faf9f7; color: #5d4e37; font-size: 11px; max-width: 600px; margin: 0 auto; padding: 10px; }
+            .menu-header { text-align: center; margin-bottom: 8px; border: 1px solid #b8860b; padding: 8px; background: linear-gradient(135deg, #fdf9f3, #f9f1e6); border-radius: 4px; }
+            .menu-title { font-size: 16px; font-weight: bold; color: #5d4e37; margin-bottom: 2px; letter-spacing: 0.5px; }
+            .restaurant-name { font-size: 12px; font-weight: bold; color: #b8860b; margin-bottom: 2px; font-style: italic; }
+            .restaurant-address { font-size: 10px; color: #8b7355; margin-bottom: 2px; }
+            .menu-date { font-size: 9px; color: #8b7355; }
+            .category { margin-bottom: 6px; }
+            .category-title { font-size: 10px; font-weight: bold; color: #5d4e37; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+            .dish { margin-bottom: 1px; padding: 1px 0; margin-left: 2px; }
+            .dish-info { display: flex; align-items: baseline; gap: 4px; }
+            .dish-name { font-weight: 500; font-size: 10px; color: #5d4e37; }
+            .dish-price { font-weight: bold; color: #b8860b; font-size: 10px; }
+            .dotted-line { flex: 1; border-bottom: 1px dotted #b8860b; margin-bottom: 1px; }
+            .category-line { height: 1px; background: #b8860b; opacity: 0.3; margin: 2px 0; }
+            .menu-footer { margin-top: 12px; text-align: center; font-size: 9px; color: #8b7355; border-top: 1px solid #b8860b; padding-top: 8px; }
             .no-print { display: none !important; }
-            .decorative-line { height: 1px; background: linear-gradient(to right, transparent, #b8860b, transparent); margin: 8px 0; }
+            .decorative-line { height: 1px; background: linear-gradient(to right, transparent, #b8860b, transparent); margin: 4px 0; }
           </style>
         </head>
         <body>
@@ -118,71 +117,59 @@ export function MenuBuilder({
               </p>
             </div>
           ) : (
-            <div id="menu-preview" className="bg-card max-w-4xl mx-auto">
-              <div className="menu-header mb-6 text-center bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 p-6 rounded-lg border border-primary/20 shadow-sm">
-                <div className="text-3xl mb-3">🍝</div>
-                <h1 className="menu-title text-3xl font-bold text-primary mb-2 font-serif tracking-wide">
+            <div id="menu-preview" className="bg-card max-w-2xl mx-auto">
+              <div className="menu-header mb-2 text-center bg-gradient-to-br from-primary/5 via-accent/5 to-primary/3 p-2 rounded border border-primary/10">
+                <h1 className="text-lg font-bold text-primary mb-0.5 font-serif tracking-wide">
                   Menu del Giorno
                 </h1>
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <div className="w-12 h-px bg-accent/60"></div>
-                  <div className="text-lg">🌿</div>
-                  <div className="w-12 h-px bg-accent/60"></div>
-                </div>
-                <h2 className="restaurant-name text-xl font-bold text-accent mb-2 italic">Da Zia Lina</h2>
-                <p className="restaurant-address text-sm text-muted-foreground mb-3 font-medium">
+                <h2 className="text-sm font-bold text-accent mb-0.5 italic">Da Zia Lina</h2>
+                <p className="text-xs text-muted-foreground mb-1">
                   Via Spogliatore, 89900 Vibo Valentia VV
                 </p>
-                <div className="menu-date flex items-center justify-center gap-1 text-sm text-muted-foreground bg-muted/50 px-4 py-2 rounded-full border border-primary/20">
-                  <Calendar className="h-4 w-4" />
+                <div className="text-xs text-muted-foreground">
                   {new Date().toLocaleDateString('it-IT', {
                     weekday: 'long',
-                    year: 'numeric',
+                    day: 'numeric',
                     month: 'long',
-                    day: 'numeric'
+                    year: 'numeric'
                   })}
                 </div>
               </div>
 
-              <div className="bg-card/50 p-6 rounded-lg border border-primary/10 shadow-sm">
+              <div className="bg-card/30 p-2 rounded border border-primary/5">
                 {DISH_CATEGORIES.map(category => {
                   const categoryDishes = getDishesForCategory(category.key);
                   if (categoryDishes.length === 0) return null;
                   
                   return (
-                    <div key={category.key} className="category mb-6 last:mb-0">
-                      <div className="flex items-center mb-3">
-                        <div className="w-8 h-px bg-accent/40"></div>
-                        <h3 className="category-title text-lg font-bold text-primary mx-4 italic">
+                    <div key={category.key} className="mb-1.5">
+                      <div className="flex items-center mb-0.5">
+                        <div className="w-3 h-px bg-accent/30"></div>
+                        <h3 className="text-xs font-bold text-primary mx-1.5 uppercase tracking-wider">
                           {category.label}
                         </h3>
-                        <div className="flex-1 h-px bg-accent/40"></div>
+                        <div className="flex-1 h-px bg-accent/30"></div>
                       </div>
                       
-                      <div className="space-y-3 ml-4">
+                      <div className="space-y-0 ml-0.5">
                         {categoryDishes.map(dish => (
-                          <div key={dish.id} className="dish flex justify-between items-start group hover:bg-muted/20 transition-colors rounded p-2">
-                            <div className="dish-info flex-1 pr-4">
-                              <div className="flex items-baseline gap-2">
-                                <h4 className="dish-name font-semibold text-base text-primary font-serif">{dish.name}</h4>
-                                <div className="flex-1 border-b border-dotted border-accent/30 mb-1"></div>
-                                <span className="dish-price font-bold text-accent text-base">
-                                  €{dish.price.toFixed(2)}
-                                </span>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  onClick={() => onRemoveDish(dish.id)} 
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 text-destructive hover:text-destructive no-print ml-2"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                              {dish.description && (
-                                <p className="dish-description text-muted-foreground text-sm italic mt-1 leading-relaxed">
-                                  {dish.description}
-                                </p>
-                              )}
+                          <div key={dish.id} className="flex justify-between items-center group hover:bg-muted/5 transition-colors rounded px-0.5 py-0">
+                            <div className="flex items-center flex-1 min-w-0">
+                              <span className="text-xs font-medium text-primary mr-1 flex-shrink-0">
+                                {dish.name}
+                              </span>
+                              <div className="flex-1 border-b border-dotted border-accent/25 mx-0.5 min-w-2"></div>
+                              <span className="text-xs font-semibold text-accent flex-shrink-0">
+                                €{dish.price.toFixed(2)}
+                              </span>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => onRemoveDish(dish.id)} 
+                                className="opacity-0 group-hover:opacity-100 transition-opacity h-3 w-3 p-0 text-destructive hover:text-destructive no-print ml-0.5"
+                              >
+                                <Trash2 className="h-2 w-2" />
+                              </Button>
                             </div>
                           </div>
                         ))}
