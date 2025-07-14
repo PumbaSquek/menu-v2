@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/types';
+import { useFileStorage } from '@/hooks/useFileStorage';
 
 interface AuthContextType {
   user: User | null;
@@ -14,49 +15,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  console.log('[AuthProvider] Initializing...');
-  
-  const [users, setUsers] = useState<User[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  // Check if we're in an iframe and provide demo mode
   const isInIframe = window !== window.parent;
   
-  console.log('[AuthProvider] In iframe:', isInIframe);
-
-  // Load data after component mounts
-  useEffect(() => {
-    const loadData = async () => {
-      if (isInIframe) {
-        // In iframe, use demo mode
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Try to load from localStorage first
-        const savedUsers = localStorage.getItem('trattoria_users');
-        const savedCurrentUser = localStorage.getItem('trattoria_current_user');
-        
-        if (savedUsers) {
-          setUsers(JSON.parse(savedUsers));
-        }
-        
-        if (savedCurrentUser) {
-          setCurrentUser(JSON.parse(savedCurrentUser));
-        }
-      } catch (err) {
-        console.error('Error loading data:', err);
-        setError('Failed to load user data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [isInIframe]);
+  // Use file storage hooks
+  const [users, setUsers, { loading: usersLoading, error: usersError }] = useFileStorage<User[]>('users', []);
+  const [currentUser, setCurrentUser, { loading: currentUserLoading, error: currentUserError }] = useFileStorage<User | null>('current_user', null);
+  
+  const loading = usersLoading || currentUserLoading;
+  const error = usersError || currentUserError;
 
   const login = async (username: string, password: string): Promise<boolean> => {
     const user = users.find(u => u.username === username);
@@ -67,15 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: user.name,
         lastLogin: new Date().toISOString()
       };
-      setCurrentUser(loggedUser);
-      
-      // Save to localStorage
-      try {
-        localStorage.setItem('trattoria_current_user', JSON.stringify(loggedUser));
-      } catch (err) {
-        console.error('Error saving current user:', err);
-      }
-      
+      await setCurrentUser(loggedUser);
       return true;
     }
     return false;
@@ -83,14 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (newUser: User): Promise<void> => {
     const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
-    
-    // Save to localStorage
-    try {
-      localStorage.setItem('trattoria_users', JSON.stringify(updatedUsers));
-    } catch (err) {
-      console.error('Error saving users:', err);
-    }
+    await setUsers(updatedUsers);
     
     // Auto-login after registration
     const loggedUser: User = {
@@ -99,22 +50,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       name: newUser.name,
       lastLogin: new Date().toISOString()
     };
-    setCurrentUser(loggedUser);
-    
-    try {
-      localStorage.setItem('trattoria_current_user', JSON.stringify(loggedUser));
-    } catch (err) {
-      console.error('Error saving current user:', err);
-    }
+    await setCurrentUser(loggedUser);
   };
 
   const logout = async () => {
-    setCurrentUser(null);
-    try {
-      localStorage.removeItem('trattoria_current_user');
-    } catch (err) {
-      console.error('Error removing current user:', err);
-    }
+    await setCurrentUser(null);
   };
 
   // In iframe mode, provide a demo user to bypass storage issues
