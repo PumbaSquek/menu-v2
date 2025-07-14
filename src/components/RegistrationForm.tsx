@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/types';
-import bcrypt from 'bcryptjs';
 
 interface RegistrationFormProps {
   onRegister: (user: User) => void;
@@ -64,14 +63,11 @@ export function RegistrationForm({ onRegister, onSwitchToLogin, existingUsers }:
     setIsLoading(true);
     
     try {
-      // Hash password
-      const hashedPassword = await bcrypt.hash(formData.password, 10);
-      
       const newUser: User = {
         id: Date.now().toString(),
         username: formData.username,
         name: formData.name,
-        password: hashedPassword,
+        password: formData.password, // Store plain text for now (local use only)
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString()
       };

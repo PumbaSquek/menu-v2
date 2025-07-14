@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/types';
 import { useFileStorage } from '@/hooks/useFileStorage';
-import bcrypt from 'bcryptjs';
 
 interface AuthContextType {
   user: User | null;
@@ -30,22 +29,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     const user = users.find(u => u.username === username);
-    if (user && user.password) {
-      try {
-        const isValid = await bcrypt.compare(password, user.password);
-        if (isValid) {
-          const loggedUser: User = {
-            id: user.id,
-            username: user.username,
-            name: user.name,
-            lastLogin: new Date().toISOString()
-          };
-          await setCurrentUser(loggedUser);
-          return true;
-        }
-      } catch (error) {
-        console.error('Error during login:', error);
-      }
+    if (user && user.password === password) {
+      const loggedUser: User = {
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        lastLogin: new Date().toISOString()
+      };
+      await setCurrentUser(loggedUser);
+      return true;
     }
     return false;
   };
