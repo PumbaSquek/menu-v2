@@ -18,6 +18,8 @@ const DEFAULT_USERS = [
 ];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  console.log('[AuthProvider] Initializing...');
+  
   const [users] = useLocalStorage('trattoria_users', DEFAULT_USERS);
   const [currentUser, setCurrentUser] = useLocalStorage<User | null>('trattoria_current_user', null);
   
@@ -25,7 +27,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isInIframe = window !== window.parent;
   
   console.log('[AuthProvider] In iframe:', isInIframe);
-  console.log('[AuthProvider] Current user:', currentUser);
+  console.log('[AuthProvider] Users from localStorage:', users);
+  console.log('[AuthProvider] Current user from localStorage:', currentUser);
 
   const login = (username: string, password: string): boolean => {
     const user = users.find(u => u.username === username && u.password === password);

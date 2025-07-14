@@ -9,7 +9,15 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Dish } from '@/types';
 
 function AppContent() {
-  const { isAuthenticated } = useAuth();
+  console.log('[AppContent] Component rendered');
+  
+  // Detect iframe environment
+  const isInIframe = window !== window.parent;
+  console.log('[AppContent] In iframe:', isInIframe);
+  
+  const { isAuthenticated, user } = useAuth();
+  console.log('[AppContent] Auth state:', { isAuthenticated, user });
+  
   const [selectedDishes, setSelectedDishes] = useState<Dish[]>([]);
 
   const handleDishSelect = (dish: Dish) => {
@@ -31,9 +39,33 @@ function AppContent() {
     setSelectedDishes([]);
   };
 
+  // In iframe mode, skip authentication completely for debugging
+  if (isInIframe) {
+    console.log('[AppContent] Running in iframe mode - bypassing auth');
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <div className="flex flex-1 overflow-hidden">
+          <AppSidebar 
+            onDishSelect={handleDishSelect}
+            selectedDishes={selectedDishes}
+          />
+          <MenuBuilder
+            selectedDishes={selectedDishes}
+            onRemoveDish={handleRemoveDish}
+            onClearMenu={handleClearMenu}
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
+    console.log('[AppContent] Not authenticated - showing login form');
     return <LoginForm />;
   }
+
+  console.log('[AppContent] Authenticated - showing main app');
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
