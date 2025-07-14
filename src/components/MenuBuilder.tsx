@@ -7,29 +7,24 @@ import { FileText, Printer, Trash2, Euro, Calendar } from 'lucide-react';
 import { Dish, DISH_CATEGORIES } from '@/types';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-
 interface MenuBuilderProps {
   selectedDishes: Dish[];
   onRemoveDish: (dishId: string) => void;
   onClearMenu: () => void;
 }
-
-export function MenuBuilder({ selectedDishes, onRemoveDish, onClearMenu }: MenuBuilderProps) {
+export function MenuBuilder({
+  selectedDishes,
+  onRemoveDish,
+  onClearMenu
+}: MenuBuilderProps) {
   const [isExporting, setIsExporting] = useState(false);
-
-  const getDishesForCategory = (category: string) => 
-    selectedDishes.filter(dish => dish.category === category);
-
-  const getTotalPrice = () => 
-    selectedDishes.reduce((sum, dish) => sum + dish.price, 0);
-
+  const getDishesForCategory = (category: string) => selectedDishes.filter(dish => dish.category === category);
+  const getTotalPrice = () => selectedDishes.reduce((sum, dish) => sum + dish.price, 0);
   const handlePrintMenu = () => {
     const printContent = document.getElementById('menu-preview');
     if (!printContent) return;
-
     const printWindow = window.open('', '', 'height=600,width=800');
     if (!printWindow) return;
-
     printWindow.document.write(`
       <html>
         <head>
@@ -64,44 +59,36 @@ export function MenuBuilder({ selectedDishes, onRemoveDish, onClearMenu }: MenuB
         </body>
       </html>
     `);
-
     printWindow.document.close();
     printWindow.focus();
     printWindow.print();
     printWindow.close();
   };
-
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
       const element = document.getElementById('menu-preview');
       if (!element) return;
-
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
-        logging: false,
+        logging: false
       });
-
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-      
       const imgWidth = 210;
       const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const imgHeight = canvas.height * imgWidth / canvas.width;
       let heightLeft = imgHeight;
       let position = 0;
-
       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
-
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
-
       const fileName = `menu_${new Date().toLocaleDateString('it-IT').replace(/\//g, '-')}.pdf`;
       pdf.save(fileName);
     } catch (error) {
@@ -110,9 +97,7 @@ export function MenuBuilder({ selectedDishes, onRemoveDish, onClearMenu }: MenuB
       setIsExporting(false);
     }
   };
-
-  return (
-    <div className="flex-1 flex flex-col h-full">
+  return <div className="flex-1 flex flex-col h-full">
       <div className="p-6 border-b border-border">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold">Menu del Giorno</h2>
@@ -128,22 +113,12 @@ export function MenuBuilder({ selectedDishes, onRemoveDish, onClearMenu }: MenuB
         </div>
         
         <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={handlePrintMenu}
-            disabled={selectedDishes.length === 0}
-            className="flex items-center gap-2"
-          >
+          <Button variant="outline" onClick={handlePrintMenu} disabled={selectedDishes.length === 0} className="flex items-center gap-2">
             <Printer className="h-4 w-4" />
             Stampa
           </Button>
           
-          <Button
-            variant="destructive"
-            onClick={onClearMenu}
-            disabled={selectedDishes.length === 0}
-            className="flex items-center gap-2"
-          >
+          <Button variant="destructive" onClick={onClearMenu} disabled={selectedDishes.length === 0} className="flex items-center gap-2">
             <Trash2 className="h-4 w-4" />
             Svuota Menu
           </Button>
@@ -152,16 +127,13 @@ export function MenuBuilder({ selectedDishes, onRemoveDish, onClearMenu }: MenuB
 
       <ScrollArea className="flex-1">
         <div className="p-6">
-          {selectedDishes.length === 0 ? (
-            <div className="text-center py-12">
+          {selectedDishes.length === 0 ? <div className="text-center py-12">
               <div className="text-6xl mb-4">🍽️</div>
               <h3 className="text-xl font-semibold mb-2">Menu vuoto</h3>
               <p className="text-muted-foreground">
                 Seleziona i piatti dalla sidebar per iniziare a creare il menu del giorno
               </p>
-            </div>
-          ) : (
-            <div id="menu-preview" className="bg-background">
+            </div> : <div id="menu-preview" className="bg-background">
               <div className="menu-header mb-8 text-center bg-gradient-to-br from-accent/5 to-primary/5 p-8 rounded-xl border-2 border-dashed border-primary/30">
                 <div className="text-4xl mb-4">🍝</div>
                 <h1 className="menu-title text-4xl font-bold text-primary mb-3 font-serif tracking-wide drop-shadow-sm">
@@ -173,66 +145,51 @@ export function MenuBuilder({ selectedDishes, onRemoveDish, onClearMenu }: MenuB
                 </p>
                 <div className="menu-date flex items-center justify-center gap-2 text-muted-foreground bg-card px-4 py-2 rounded-full border">
                   <Calendar className="h-4 w-4" />
-                  {new Date().toLocaleDateString('it-IT', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
+                  {new Date().toLocaleDateString('it-IT', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
                 </div>
               </div>
 
               <div className="space-y-8">
                 {DISH_CATEGORIES.map(category => {
-                  const categoryDishes = getDishesForCategory(category.key);
-                  
-                  if (categoryDishes.length === 0) return null;
-                  
-                  return (
-                    <div key={category.key} className="category">
+              const categoryDishes = getDishesForCategory(category.key);
+              if (categoryDishes.length === 0) return null;
+              return <div key={category.key} className="category">
                       <div className="relative mb-6">
                         <h3 className="category-title text-2xl font-bold text-primary text-center py-3 relative">
-                          <span className="absolute left-1/4 top-1/2 transform -translate-y-1/2 text-accent">🌿</span>
+                          
                           {category.label}
-                          <span className="absolute right-1/4 top-1/2 transform -translate-y-1/2 text-accent">🌿</span>
+                          
                         </h3>
                         <div className="w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
                       </div>
                       <div className="space-y-3">
-                        {categoryDishes.map(dish => (
-                           <div key={dish.id} className="dish flex justify-between items-start group py-4 border-b border-dotted border-accent/30 last:border-b-0">
+                        {categoryDishes.map(dish => <div key={dish.id} className="dish flex justify-between items-start group py-4 border-b border-dotted border-accent/30 last:border-b-0">
                             <div className="dish-info flex-1 pr-4">
                               <h4 className="dish-name font-bold text-lg text-primary mb-2 font-serif">{dish.name}</h4>
-                              {dish.description && (
-                                <p className="dish-description text-muted-foreground mt-1 italic leading-relaxed">
+                              {dish.description && <p className="dish-description text-muted-foreground mt-1 italic leading-relaxed">
                                   {dish.description}
-                                </p>
-                              )}
+                                </p>}
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="dish-price font-bold text-accent text-lg bg-accent/10 px-3 py-1 rounded-full border border-accent/30">
                                 €{dish.price.toFixed(2)}
                               </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => onRemoveDish(dish.id)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0 text-destructive hover:text-destructive print:hidden"
-                              >
+                              <Button variant="ghost" size="sm" onClick={() => onRemoveDish(dish.id)} className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0 text-destructive hover:text-destructive print:hidden">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
-                          </div>
-                        ))}
+                          </div>)}
                       </div>
-                    </div>
-                  );
-                })}
+                    </div>;
+            })}
               </div>
-            </div>
-          )}
+            </div>}
         </div>
       </ScrollArea>
-    </div>
-  );
+    </div>;
 }
