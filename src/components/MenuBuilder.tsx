@@ -34,6 +34,12 @@ export function MenuBuilder({
     const trashButtons = clonedContent.querySelectorAll('.no-print');
     trashButtons.forEach(button => button.remove());
     
+    // Calculate dynamic sizing based on number of dishes
+    const totalDishes = selectedDishes.length;
+    const baseSize = Math.max(10, Math.min(16, 20 - Math.floor(totalDishes / 8)));
+    const headerSize = Math.max(18, Math.min(28, 32 - Math.floor(totalDishes / 6)));
+    const categorySize = Math.max(11, Math.min(14, 16 - Math.floor(totalDishes / 10)));
+    
     const printWindow = window.open('', '', 'height=600,width=800');
     if (!printWindow) return;
     printWindow.document.write(`
@@ -41,27 +47,152 @@ export function MenuBuilder({
         <head>
           <title>Menu del Giorno - Da Zia Lina</title>
           <style>
-            body { font-family: 'Georgia', serif; margin: 10px; background: #faf9f7; color: #5d4e37; font-size: 11px; max-width: 600px; margin: 0 auto; padding: 10px; }
-            .menu-header { text-align: center; margin-bottom: 8px; border: 1px solid #b8860b; padding: 8px; background: linear-gradient(135deg, #fdf9f3, #f9f1e6); border-radius: 4px; }
-            .menu-title { font-size: 16px; font-weight: bold; color: #5d4e37; margin-bottom: 2px; letter-spacing: 0.5px; }
-            .restaurant-name { font-size: 12px; font-weight: bold; color: #b8860b; margin-bottom: 2px; font-style: italic; }
-            .restaurant-address { font-size: 10px; color: #8b7355; margin-bottom: 2px; }
-            .menu-date { font-size: 9px; color: #8b7355; }
-            .category { margin-bottom: 6px; }
-            .category-title { font-size: 10px; font-weight: bold; color: #5d4e37; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
-            .dish { margin-bottom: 1px; padding: 1px 0; margin-left: 2px; }
-            .dish-info { display: flex; align-items: baseline; gap: 4px; }
-            .dish-name { font-weight: 500; font-size: 10px; color: #5d4e37; }
-            .dish-price { font-weight: bold; color: #b8860b; font-size: 10px; }
-            .dotted-line { flex: 1; border-bottom: 1px dotted #b8860b; margin-bottom: 1px; }
-            .category-line { height: 1px; background: #b8860b; opacity: 0.3; margin: 2px 0; }
-            .menu-footer { margin-top: 12px; text-align: center; font-size: 9px; color: #8b7355; border-top: 1px solid #b8860b; padding-top: 8px; }
+            @page { margin: 15mm; size: A4; }
+            body { 
+              font-family: 'Georgia', serif; 
+              margin: 0; 
+              padding: 15px;
+              background: #faf9f7; 
+              color: #5d4e37; 
+              font-size: ${baseSize}px;
+              width: 100%;
+              max-width: none;
+              text-align: center;
+              display: flex;
+              flex-direction: column;
+              min-height: 100vh;
+            }
+            .menu-content {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              max-width: 90%;
+              margin: 0 auto;
+            }
+            .menu-header { 
+              text-align: center; 
+              margin-bottom: ${Math.max(15, 25 - Math.floor(totalDishes / 5))}px; 
+              border: 2px solid #b8860b; 
+              padding: ${Math.max(15, 25 - Math.floor(totalDishes / 8))}px; 
+              background: linear-gradient(135deg, #fdf9f3, #f9f1e6); 
+              border-radius: 8px; 
+            }
+            .menu-title { 
+              font-size: ${headerSize}px; 
+              font-weight: bold; 
+              color: #5d4e37; 
+              margin-bottom: 8px; 
+              letter-spacing: 1px; 
+            }
+            .restaurant-name { 
+              font-size: ${Math.max(14, headerSize - 6)}px; 
+              font-weight: bold; 
+              color: #b8860b; 
+              margin-bottom: 6px; 
+              font-style: italic; 
+            }
+            .restaurant-address { 
+              font-size: ${Math.max(11, baseSize - 1)}px; 
+              color: #8b7355; 
+              margin-bottom: 6px; 
+            }
+            .menu-date { 
+              font-size: ${Math.max(10, baseSize - 2)}px; 
+              color: #8b7355; 
+            }
+            .menu-categories {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              width: 100%;
+            }
+            .category { 
+              margin-bottom: ${Math.max(12, 20 - Math.floor(totalDishes / 6))}px; 
+              width: 100%;
+              max-width: 800px;
+            }
+            .category-header {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-bottom: ${Math.max(8, 12 - Math.floor(totalDishes / 10))}px;
+            }
+            .category-line {
+              flex: 1;
+              height: 1px;
+              background: #b8860b;
+              opacity: 0.4;
+              max-width: 100px;
+            }
+            .category-title { 
+              font-size: ${categorySize}px; 
+              font-weight: bold; 
+              color: #5d4e37; 
+              text-transform: uppercase; 
+              letter-spacing: 1.5px; 
+              margin: 0 20px;
+              white-space: nowrap;
+            }
+            .dishes-container {
+              display: grid;
+              grid-template-columns: 1fr;
+              gap: ${Math.max(3, 6 - Math.floor(totalDishes / 15))}px;
+              width: 100%;
+            }
+            .dish { 
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: ${Math.max(2, 4 - Math.floor(totalDishes / 20))}px 0;
+              width: 100%;
+            }
+            .dish-content {
+              display: flex;
+              align-items: baseline;
+              width: 100%;
+              max-width: 600px;
+              gap: 8px;
+            }
+            .dish-name { 
+              font-weight: 600; 
+              font-size: ${baseSize}px; 
+              color: #5d4e37; 
+              flex-shrink: 0;
+            }
+            .dish-price { 
+              font-weight: bold; 
+              color: #b8860b; 
+              font-size: ${baseSize}px; 
+              flex-shrink: 0;
+            }
+            .dotted-line { 
+              flex: 1; 
+              border-bottom: 1px dotted #b8860b; 
+              margin-bottom: 3px; 
+              min-width: 20px;
+            }
+            .menu-footer { 
+              margin-top: auto; 
+              padding-top: 20px;
+              text-align: center; 
+              font-size: ${Math.max(9, baseSize - 3)}px; 
+              color: #8b7355; 
+              border-top: 1px solid #b8860b; 
+            }
             .no-print { display: none !important; }
-            .decorative-line { height: 1px; background: linear-gradient(to right, transparent, #b8860b, transparent); margin: 4px 0; }
+            .decorative-line { 
+              height: 1px; 
+              background: linear-gradient(to right, transparent, #b8860b, transparent); 
+              margin: 8px auto; 
+              width: 200px;
+            }
           </style>
         </head>
         <body>
-          ${clonedContent.innerHTML}
+          <div class="menu-content">
+            ${clonedContent.innerHTML}
+          </div>
           <div class="menu-footer">
             <div class="decorative-line"></div>
             <p><strong>Da Zia Lina</strong><br/>Via Spogliatore, 89900 Vibo Valentia VV</p>
@@ -119,14 +250,14 @@ export function MenuBuilder({
           ) : (
             <div id="menu-preview" className="bg-card max-w-2xl mx-auto">
               <div className="menu-header mb-2 text-center bg-gradient-to-br from-primary/5 via-accent/5 to-primary/3 p-2 rounded border border-primary/10">
-                <h1 className="text-lg font-bold text-primary mb-0.5 font-serif tracking-wide">
+                <h1 className="menu-title text-lg font-bold text-primary mb-0.5 font-serif tracking-wide">
                   Menu del Giorno
                 </h1>
-                <h2 className="text-sm font-bold text-accent mb-0.5 italic">Da Zia Lina</h2>
-                <p className="text-xs text-muted-foreground mb-1">
+                <h2 className="restaurant-name text-sm font-bold text-accent mb-0.5 italic">Da Zia Lina</h2>
+                <p className="restaurant-address text-xs text-muted-foreground mb-1">
                   Via Spogliatore, 89900 Vibo Valentia VV
                 </p>
-                <div className="text-xs text-muted-foreground">
+                <div className="menu-date text-xs text-muted-foreground">
                   {new Date().toLocaleDateString('it-IT', {
                     weekday: 'long',
                     day: 'numeric',
@@ -136,30 +267,30 @@ export function MenuBuilder({
                 </div>
               </div>
 
-              <div className="bg-card/30 p-2 rounded border border-primary/5">
+              <div className="menu-categories bg-card/30 p-2 rounded border border-primary/5">
                 {DISH_CATEGORIES.map(category => {
                   const categoryDishes = getDishesForCategory(category.key);
                   if (categoryDishes.length === 0) return null;
                   
                   return (
-                    <div key={category.key} className="mb-1.5">
-                      <div className="flex items-center mb-0.5">
-                        <div className="w-3 h-px bg-accent/30"></div>
-                        <h3 className="text-xs font-bold text-primary mx-1.5 uppercase tracking-wider">
+                    <div key={category.key} className="category mb-1.5">
+                      <div className="category-header flex items-center mb-0.5">
+                        <div className="category-line w-3 h-px bg-accent/30"></div>
+                        <h3 className="category-title text-xs font-bold text-primary mx-1.5 uppercase tracking-wider">
                           {category.label}
                         </h3>
-                        <div className="flex-1 h-px bg-accent/30"></div>
+                        <div className="category-line flex-1 h-px bg-accent/30"></div>
                       </div>
                       
-                      <div className="space-y-0 ml-0.5">
+                      <div className="dishes-container space-y-0 ml-0.5">
                         {categoryDishes.map(dish => (
-                          <div key={dish.id} className="flex justify-between items-center group hover:bg-muted/5 transition-colors rounded px-0.5 py-0">
-                            <div className="flex items-center flex-1 min-w-0">
-                              <span className="text-xs font-medium text-primary mr-1 flex-shrink-0">
+                          <div key={dish.id} className="dish flex justify-between items-center group hover:bg-muted/5 transition-colors rounded px-0.5 py-0">
+                            <div className="dish-content flex items-center flex-1 min-w-0">
+                              <span className="dish-name text-xs font-medium text-primary mr-1 flex-shrink-0">
                                 {dish.name}
                               </span>
-                              <div className="flex-1 border-b border-dotted border-accent/25 mx-0.5 min-w-2"></div>
-                              <span className="text-xs font-semibold text-accent flex-shrink-0">
+                              <div className="dotted-line flex-1 border-b border-dotted border-accent/25 mx-0.5 min-w-2"></div>
+                              <span className="dish-price text-xs font-semibold text-accent flex-shrink-0">
                                 €{dish.price.toFixed(2)}
                               </span>
                               <Button 
