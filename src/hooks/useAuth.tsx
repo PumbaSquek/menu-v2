@@ -17,12 +17,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const isInIframe = window !== window.parent;
   
-  // Use file storage hooks
+  // Use file storage hooks with error handling
   const [users, setUsers, { loading: usersLoading, error: usersError }] = useFileStorage<User[]>('users', []);
   const [currentUser, setCurrentUser, { loading: currentUserLoading, error: currentUserError }] = useFileStorage<User | null>('current_user', null);
   
   const loading = usersLoading || currentUserLoading;
   const error = usersError || currentUserError;
+  
+  console.log('[AuthProvider] State:', { users: users?.length, currentUser: currentUser?.username, loading, error });
 
   const login = async (username: string, password: string): Promise<boolean> => {
     const user = users.find(u => u.username === username);
@@ -74,6 +76,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     error
   };
+
+  // Don't render children until the provider is ready (except in iframe)
+  if (!isInIframe && loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-sm text-muted-foreground">Caricamento...</p>
+        </div>
+      </div>
+    );
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
