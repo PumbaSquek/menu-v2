@@ -19,6 +19,8 @@ export interface User {
   id: string;
   username: string;
   name: string;
+  password?: string; // Optional for security (won't be returned from API)
+  createdAt?: string;
   lastLogin: string;
 }
 

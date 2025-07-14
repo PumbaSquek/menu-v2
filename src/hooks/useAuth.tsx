@@ -1,55 +1,74 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/types';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useFileStorage } from '@/hooks/useFileStorage';
+import bcrypt from 'bcryptjs';
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
+  register: (user: User) => Promise<void>;
   isAuthenticated: boolean;
+  loading: boolean;
+  error: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Default users for local authentication
-const DEFAULT_USERS = [
-  { id: '1', username: 'admin', password: 'admin123', name: 'Amministratore' },
-  { id: '2', username: 'staff', password: 'staff123', name: 'Staff Trattoria' }
-];
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   console.log('[AuthProvider] Initializing...');
   
-  const [users] = useLocalStorage('trattoria_users', DEFAULT_USERS);
-  const [currentUser, setCurrentUser] = useLocalStorage<User | null>('trattoria_current_user', null);
+  const [users, setUsers, { loading: usersLoading, error: usersError }] = useFileStorage<User[]>('users', []);
+  const [currentUser, setCurrentUser, { loading: currentUserLoading, error: currentUserError }] = useFileStorage<User | null>('current_user', null);
   
   // Check if we're in an iframe and provide demo mode
   const isInIframe = window !== window.parent;
   
   console.log('[AuthProvider] In iframe:', isInIframe);
-  console.log('[AuthProvider] Users from localStorage:', users);
-  console.log('[AuthProvider] Current user from localStorage:', currentUser);
+  console.log('[AuthProvider] Users from file storage:', users);
+  console.log('[AuthProvider] Current user from file storage:', currentUser);
 
-  const login = (username: string, password: string): boolean => {
-    const user = users.find(u => u.username === username && u.password === password);
-    if (user) {
-      const loggedUser: User = {
-        id: user.id,
-        username: user.username,
-        name: user.name,
-        lastLogin: new Date().toISOString()
-      };
-      setCurrentUser(loggedUser);
-      return true;
+  const login = async (username: string, password: string): Promise<boolean> => {
+    const user = users.find(u => u.username === username);
+    if (user && user.password) {
+      try {
+        const isValid = await bcrypt.compare(password, user.password);
+        if (isValid) {
+          const loggedUser: User = {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            lastLogin: new Date().toISOString()
+          };
+          await setCurrentUser(loggedUser);
+          return true;
+        }
+      } catch (error) {
+        console.error('Error during login:', error);
+      }
     }
     return false;
   };
 
-  const logout = () => {
-    setCurrentUser(null);
+  const register = async (newUser: User): Promise<void> => {
+    const updatedUsers = [...users, newUser];
+    await setUsers(updatedUsers);
+    
+    // Auto-login after registration
+    const loggedUser: User = {
+      id: newUser.id,
+      username: newUser.username,
+      name: newUser.name,
+      lastLogin: new Date().toISOString()
+    };
+    await setCurrentUser(loggedUser);
   };
 
-  // In iframe mode, provide a demo user to bypass localStorage issues
+  const logout = async () => {
+    await setCurrentUser(null);
+  };
+
+  // In iframe mode, provide a demo user to bypass file storage issues
   const demoUser: User = {
     id: 'demo',
     username: 'demo',
@@ -57,11 +76,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     lastLogin: new Date().toISOString()
   };
 
+  const loading = usersLoading || currentUserLoading;
+  const error = usersError || currentUserError;
+
   const value = {
     user: isInIframe ? demoUser : currentUser,
     login,
     logout,
-    isAuthenticated: isInIframe ? true : !!currentUser
+    register,
+    isAuthenticated: isInIframe ? true : !!currentUser,
+    loading,
+    error
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
