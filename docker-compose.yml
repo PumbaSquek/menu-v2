@@ -4,7 +4,6 @@ services:
   trattoria-menu:
     build: .
     ports:
-      - "8080:8080"
       - "3001:3001"
     volumes:
       - ./data:/app/data

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = '/api';
 
 export function useFileStorage<T>(key: string, initialValue: T) {
   const [storedValue, setStoredValue] = useState<T>(initialValue);
@@ -8,40 +8,42 @@ export function useFileStorage<T>(key: string, initialValue: T) {
   const [error, setError] = useState<string | null>(null);
   const [useLocalStorage, setUseLocalStorage] = useState(false);
 
-  // Load data on mount
+  // Evita doppi caricamenti e loop (StrictMode/dev e re-render)
+  const loadedRef = useRef(false);
+
   useEffect(() => {
+    if (loadedRef.current) return; // esegui solo una volta per "key"
+    loadedRef.current = true;
+
     const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // Check if we're in iframe or if backend is not available
+
+        // in iframe → usa localStorage
         const isInIframe = window !== window.parent;
         if (isInIframe) {
-          console.log(`[useFileStorage] ${key} - Using localStorage fallback in iframe`);
           setUseLocalStorage(true);
           loadFromLocalStorage();
           return;
         }
 
-        // Try to load from backend with short timeout
+        // tenta backend con timeout più alto
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
-        
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
         try {
           const response = await fetch(`${API_BASE}/data/${key}`, {
-            signal: controller.signal
+            signal: controller.signal,
           });
           clearTimeout(timeoutId);
-          
+
           if (response.ok) {
             const data = await response.json();
             setStoredValue(data);
-            console.log(`[useFileStorage] ${key} - Loaded from backend:`, data);
           } else if (response.status === 404) {
-            // File doesn't exist yet, use initial value
+            // file mancante: usa initialValue
             setStoredValue(initialValue);
-            console.log(`[useFileStorage] ${key} - File not found, using initial value`);
           } else {
             throw new Error(`Backend error: ${response.status}`);
           }
@@ -50,7 +52,7 @@ export function useFileStorage<T>(key: string, initialValue: T) {
           throw fetchErr;
         }
       } catch (err) {
-        console.warn(`[useFileStorage] ${key} - Backend not available, falling back to localStorage:`, err);
+        // fallback a localStorage
         setUseLocalStorage(true);
         loadFromLocalStorage();
       } finally {
@@ -63,66 +65,56 @@ export function useFileStorage<T>(key: string, initialValue: T) {
         const item = window.localStorage.getItem(`trattoria_${key}`);
         const data = item ? JSON.parse(item) : initialValue;
         setStoredValue(data);
-      } catch (err) {
-        console.error(`[useFileStorage] ${key} - Error loading from localStorage:`, err);
+      } catch {
         setStoredValue(initialValue);
       }
     };
 
     loadData();
-  }, [key, initialValue]);
+  // ⚠️ Dipende solo da "key": NON mettere initialValue qui
+  }, [key]);
 
   const setValue = async (value: T | ((val: T) => T)) => {
     const valueToStore = value instanceof Function ? value(storedValue) : value;
-    
+
     try {
       setStoredValue(valueToStore);
       setError(null);
 
       if (useLocalStorage) {
-        // Save to localStorage
         window.localStorage.setItem(`trattoria_${key}`, JSON.stringify(valueToStore));
-        console.log(`[useFileStorage] ${key} - Saved to localStorage:`, valueToStore);
         return;
       }
 
-      // Try to save to backend with timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
-      
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       try {
         const response = await fetch(`${API_BASE}/data/${key}`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: valueToStore }),
-          signal: controller.signal
+          signal: controller.signal,
         });
         clearTimeout(timeoutId);
 
         if (!response.ok) {
           throw new Error(`Failed to save data: ${response.status}`);
         }
-        console.log(`[useFileStorage] ${key} - Saved to backend:`, valueToStore);
       } catch (fetchErr) {
         clearTimeout(timeoutId);
         throw fetchErr;
       }
     } catch (err) {
-      console.error(`[useFileStorage] ${key} - Error saving:`, err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      
-      // Fallback to localStorage
+      // fallback locale in caso di errore salvataggio
       try {
         window.localStorage.setItem(`trattoria_${key}`, JSON.stringify(valueToStore));
-        setUseLocalStorage(true); // Switch to localStorage mode
-        console.log(`[useFileStorage] ${key} - Saved to localStorage as fallback`);
-      } catch (localErr) {
-        console.error(`[useFileStorage] ${key} - Failed to save to localStorage:`, localErr);
-        // Revert to previous value on complete failure
+        setUseLocalStorage(true);
+      } catch {
+        // ripristina il precedente se proprio fallisce
         setStoredValue(storedValue);
       }
+      setError(err instanceof Error ? err.message : 'Unknown error');
     }
   };
 

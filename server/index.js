@@ -1,87 +1,96 @@
 import express from 'express';
-import cors from 'cors';
+import path from 'path';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 
+// __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname  = path.dirname(__filename);
 
+// Config
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../data');
+const PORT     = parseInt(process.env.PORT || '3001', 10);
+
+// App
 const app = express();
-const PORT = process.env.PORT || 3001;
-const DATA_DIR = process.env.DATA_DIR || join(process.cwd(), 'data');
 
-// Middleware
-app.use(cors());
+// Log minimale delle API (/api e /data)
+app.use(['/api', '/data'], (req, _res, next) => {
+  console.log(new Date().toISOString(), req.method, req.url);
+  next();
+});
+
 app.use(express.json());
 
-// Ensure data directory exists
+// Assicura che la cartella dati esista
 if (!existsSync(DATA_DIR)) {
   mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// Helper functions
-const readDataFile = (filename) => {
-  const filePath = join(DATA_DIR, filename);
-  if (!existsSync(filePath)) {
-    return null;
-  }
+// Helpers
+function readDataFile(filename) {
+  const filePath = path.join(DATA_DIR, filename);
+  if (!existsSync(filePath)) return null;
   try {
-    const data = readFileSync(filePath, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error(`Error reading ${filename}:`, error);
+    return JSON.parse(readFileSync(filePath, 'utf8'));
+  } catch (err) {
+    console.error(`Error reading ${filename}:`, err);
     return null;
   }
-};
+}
 
-const writeDataFile = (filename, data) => {
-  const filePath = join(DATA_DIR, filename);
+function writeDataFile(filename, data) {
+  const filePath = path.join(DATA_DIR, filename);
   try {
     writeFileSync(filePath, JSON.stringify(data, null, 2));
     return true;
-  } catch (error) {
-    console.error(`Error writing ${filename}:`, error);
+  } catch (err) {
+    console.error(`Error writing ${filename}:`, err);
     return false;
   }
-};
+}
 
-// API Routes
-
-// Get data
-app.get('/api/data/:type', (req, res) => {
-  const { type } = req.params;
-  const filename = `${type}.json`;
-  const data = readDataFile(filename);
-  
-  if (data === null) {
-    return res.status(404).json({ error: 'Data not found' });
-  }
-  
-  res.json(data);
-});
-
-// Save data
-app.post('/api/data/:type', (req, res) => {
-  const { type } = req.params;
-  const { data } = req.body;
-  const filename = `${type}.json`;
-  
-  const success = writeDataFile(filename, data);
-  
-  if (success) {
-    res.json({ success: true });
-  } else {
-    res.status(500).json({ error: 'Failed to save data' });
-  }
-});
-
-// Health check
-app.get('/api/health', (req, res) => {
+// Health (alias utile)
+app.get(['/api/health', '/health'], (_req, res) => {
   res.json({ status: 'ok', dataDir: DATA_DIR });
 });
 
-app.listen(PORT, () => {
+// GET: /api/data/:type  e  /data/:type
+app.get(['/api/data/:type', '/data/:type'], (req, res) => {
+  const fn = `${req.params.type}.json`;
+  let data = readDataFile(fn);
+
+  // Se manca, crea default: [] per dishes/users, null per current_user
+  if (data === null) {
+    data = req.params.type === 'current_user' ? null : [];
+    writeDataFile(fn, data);
+  }
+
+  res.json(data);
+});
+
+// POST: /api/data/:type  e  /data/:type
+app.post(['/api/data/:type', '/data/:type'], (req, res) => {
+  const fn = `${req.params.type}.json`;
+  if (writeDataFile(fn, req.body?.data)) {
+    res.json({ success: true });
+  } else {
+    res.status(500).json({ error: 'Save failed' });
+  }
+});
+
+// Serve static build (Vite) e fallback SPA
+const clientDist = path.join(__dirname, '../dist');
+app.use(express.static(clientDist));
+
+// Fallback SPA: tutto ciò che non è API o file statico -> index.html
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/data')) return next();
+  res.sendFile(path.join(clientDist, 'index.html'));
+});
+
+// Start
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Data directory: ${DATA_DIR}`);
 });

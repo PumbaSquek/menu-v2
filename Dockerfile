@@ -1,24 +1,35 @@
-# Use Node.js LTS Alpine for smaller image size
-FROM node:18-alpine
-
-# Set working directory
+# ---- STAGE 1: Build ----
+FROM --platform=$BUILDPLATFORM node:18-alpine AS build
 WORKDIR /app
 
-# Install dependencies
-COPY package*.json ./
-RUN npm ci --only=production
+# Copia file di lock e installa dipendenze (dev+prod) per avere Vite in build
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Copy application code
+# Copia sorgenti e builda con Vite
 COPY . .
-
-# Build the application
 RUN npm run build
 
-# Create data directory for persistence
+# ---- STAGE 2: Runtime ----
+FROM node:18-alpine AS runtime
+WORKDIR /app
+
+# Copia build statica e codice server
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/server ./server
+
+# Copia package.json e lockfile per garantire npm ci in runtime
+COPY --from=build /app/package.json ./
+COPY --from=build /app/package-lock.json ./
+
+# Installa solo dipendenze di produzione (Express, ecc.)
+RUN npm ci --omit=dev
+
+# Crea cartella dati per persistenza JSON
 RUN mkdir -p /app/data
 
-# Expose port
-EXPOSE 8080
+# Esponi porta 3001 per API e UI
+EXPOSE 3001
 
-# Start both frontend and backend
-CMD ["npm", "run", "start:prod"]
+# Avvia il server Express che serve API e UI
+CMD ["node", "server/index.js"]
