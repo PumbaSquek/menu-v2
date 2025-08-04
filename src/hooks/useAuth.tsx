@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
+import { useFileStorage } from '@/hooks/useFileStorage';
 import { User } from '@/types';
 
 interface AuthContextType {
@@ -15,118 +16,65 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const isInIframe = window !== window.parent;
-  
-  const [users, setUsers] = useState<User[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Load data on mount
-  useEffect(() => {
-    const loadData = () => {
-      try {
-        if (isInIframe) {
-          setLoading(false);
-          return;
-        }
-
-        const savedUsers = localStorage.getItem('trattoria_users');
-        const savedCurrentUser = localStorage.getItem('trattoria_current_user');
-        
-        if (savedUsers) {
-          setUsers(JSON.parse(savedUsers));
-        }
-        
-        if (savedCurrentUser) {
-          setCurrentUser(JSON.parse(savedCurrentUser));
-        }
-      } catch (err) {
-        console.error('Error loading data:', err);
-        setError('Failed to load user data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [isInIframe]);
+  // Persistenza utenti e utente corrente su disco
+  const [users, setUsers, usersMeta] = useFileStorage<User[]>('users', []);
+  const [currentUser, setCurrentUser, currentMeta] =
+    useFileStorage<User | null>('current_user', null);
+  const loading = usersMeta.loading || currentMeta.loading;
+  const error = usersMeta.error || currentMeta.error;
 
   const login = async (username: string, password: string): Promise<boolean> => {
-    const user = users.find(u => u.username === username);
-    if (user && user.password === password) {
+    const found = users.find((u) => u.username === username);
+    if (found && found.password === password) {
       const loggedUser: User = {
-        id: user.id,
-        username: user.username,
-        name: user.name,
-        lastLogin: new Date().toISOString()
+        id: found.id,
+        username: found.username,
+        name: found.name,
+        lastLogin: new Date().toISOString(),
       };
       setCurrentUser(loggedUser);
-      
-      try {
-        localStorage.setItem('trattoria_current_user', JSON.stringify(loggedUser));
-      } catch (err) {
-        console.error('Error saving current user:', err);
-      }
-      
       return true;
     }
     return false;
   };
 
   const register = async (newUser: User): Promise<void> => {
-    const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
-    
-    try {
-      localStorage.setItem('trattoria_users', JSON.stringify(updatedUsers));
-    } catch (err) {
-      console.error('Error saving users:', err);
-    }
-    
-    // Auto-login after registration
+    // aggiunge l’utente e salva su disco
+    setUsers([...users, newUser]);
+
+    // auto-login
     const loggedUser: User = {
       id: newUser.id,
       username: newUser.username,
       name: newUser.name,
-      lastLogin: new Date().toISOString()
+      lastLogin: new Date().toISOString(),
     };
     setCurrentUser(loggedUser);
-    
-    try {
-      localStorage.setItem('trattoria_current_user', JSON.stringify(loggedUser));
-    } catch (err) {
-      console.error('Error saving current user:', err);
-    }
   };
 
   const logout = () => {
     setCurrentUser(null);
-    try {
-      localStorage.removeItem('trattoria_current_user');
-    } catch (err) {
-      console.error('Error removing current user:', err);
-    }
   };
 
-  // In iframe mode, provide a demo user to bypass storage issues
+  // Demo user se in iframe
   const demoUser: User = {
     id: 'demo',
     username: 'demo',
     name: 'Demo User',
-    lastLogin: new Date().toISOString()
+    lastLogin: new Date().toISOString(),
   };
 
-  const value = {
+  const value: AuthContextType = {
     user: isInIframe ? demoUser : currentUser,
     login,
     logout,
     register,
     isAuthenticated: isInIframe ? true : !!currentUser,
     loading,
-    error
+    error,
   };
 
-  // Don't render children until loaded (except in iframe)
   if (!isInIframe && loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -138,7 +86,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

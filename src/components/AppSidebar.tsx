@@ -1,15 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Plus, Trash2, Euro } from 'lucide-react';
 import { Dish, DishCategory, DISH_CATEGORIES } from '@/types';
 import { SAMPLE_DISHES } from '@/data/sampleDishes';
 import { useToast } from '@/hooks/use-toast';
+import { useFileStorage } from '@/hooks/useFileStorage';
 
 interface AppSidebarProps {
   onDishSelect: (dish: Dish) => void;
@@ -17,8 +24,11 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
-  const [dishes, setDishes] = useState<Dish[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Persistenza su disco: data/dishes.json
+  const [dishes, setDishes, { loading, error }] = useFileStorage<Dish[]>(
+    'dishes',       // crea/legge data/dishes.json
+    SAMPLE_DISHES   // valore iniziale
+  );
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newDish, setNewDish] = useState({
     name: '',
@@ -28,43 +38,12 @@ export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
   });
   const { toast } = useToast();
 
-  // Load dishes on mount
-  useEffect(() => {
-    const loadDishes = () => {
-      try {
-        const saved = localStorage.getItem('trattoria_dishes');
-        if (saved) {
-          setDishes(JSON.parse(saved));
-        } else {
-          setDishes(SAMPLE_DISHES);
-          localStorage.setItem('trattoria_dishes', JSON.stringify(SAMPLE_DISHES));
-        }
-      } catch (err) {
-        console.error('Error loading dishes:', err);
-        setDishes(SAMPLE_DISHES);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadDishes();
-  }, []);
-
-  const saveDishes = (updatedDishes: Dish[]) => {
-    setDishes(updatedDishes);
-    try {
-      localStorage.setItem('trattoria_dishes', JSON.stringify(updatedDishes));
-    } catch (err) {
-      console.error('Error saving dishes:', err);
-    }
-  };
-
   const handleAddDish = () => {
     if (!newDish.name || !newDish.price) {
       toast({
-        variant: "destructive",
-        title: "Errore",
-        description: "Nome e prezzo sono obbligatori",
+        variant: 'destructive',
+        title: 'Errore',
+        description: 'Nome e prezzo sono obbligatori',
       });
       return;
     }
@@ -79,31 +58,31 @@ export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
       createdAt: new Date().toISOString(),
     };
 
-    const updatedDishes = [...dishes, dish];
-    saveDishes(updatedDishes);
+    // salva su file
+    setDishes([...dishes, dish]);
     setNewDish({ name: '', description: '', price: '', category: 'antipasti' });
     setIsAddDialogOpen(false);
-    
+
     toast({
-      title: "Piatto aggiunto",
+      title: 'Piatto aggiunto',
       description: `${dish.name} è stato aggiunto al menu`,
     });
   };
 
   const handleRemoveDish = (dishId: string) => {
-    const updatedDishes = dishes.filter(d => d.id !== dishId);
-    saveDishes(updatedDishes);
+    const updated = dishes.filter((d) => d.id !== dishId);
+    setDishes(updated);
     toast({
-      title: "Piatto rimosso",
-      description: "Il piatto è stato rimosso dal database",
+      title: 'Piatto rimosso',
+      description: 'Il piatto è stato rimosso dal database',
     });
   };
 
-  const getDishesForCategory = (category: DishCategory) => 
-    dishes.filter(dish => dish.category === category);
+  const getDishesForCategory = (category: DishCategory) =>
+    dishes.filter((dish) => dish.category === category);
 
-  const isDishSelected = (dish: Dish) => 
-    selectedDishes.some(selected => selected.id === dish.id);
+  const isDishSelected = (dish: Dish) =>
+    selectedDishes.some((sel) => sel.id === dish.id);
 
   return (
     <div className="w-80 bg-card border-r border-border h-full flex flex-col">
@@ -127,7 +106,9 @@ export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
                   <Input
                     id="name"
                     value={newDish.name}
-                    onChange={(e) => setNewDish(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) =>
+                      setNewDish((p) => ({ ...p, name: e.target.value }))
+                    }
                     placeholder="es. Spaghetti alla Carbonara"
                   />
                 </div>
@@ -136,7 +117,9 @@ export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
                   <Input
                     id="description"
                     value={newDish.description}
-                    onChange={(e) => setNewDish(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setNewDish((p) => ({ ...p, description: e.target.value }))
+                    }
                     placeholder="Breve descrizione del piatto"
                   />
                 </div>
@@ -145,9 +128,11 @@ export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
                   <Input
                     id="price"
                     type="number"
-                    step="0.50"
+                    step="0.5"
                     value={newDish.price}
-                    onChange={(e) => setNewDish(prev => ({ ...prev, price: e.target.value }))}
+                    onChange={(e) =>
+                      setNewDish((p) => ({ ...p, price: e.target.value }))
+                    }
                     placeholder="12.50"
                   />
                 </div>
@@ -156,11 +141,18 @@ export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
                   <select
                     id="category"
                     value={newDish.category}
-                    onChange={(e) => setNewDish(prev => ({ ...prev, category: e.target.value as DishCategory }))}
+                    onChange={(e) =>
+                      setNewDish((p) => ({
+                        ...p,
+                        category: e.target.value as DishCategory,
+                      }))
+                    }
                     className="w-full p-2 border border-input rounded-md bg-background"
                   >
-                    {DISH_CATEGORIES.map(cat => (
-                      <option key={cat.key} value={cat.key}>{cat.label}</option>
+                    {DISH_CATEGORIES.map((cat) => (
+                      <option key={cat.key} value={cat.key}>
+                        {cat.label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -172,15 +164,17 @@ export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
           </Dialog>
         </div>
         <p className="text-sm text-muted-foreground">
-          {dishes.length} piatti totali
+          {loading ? 'Caricamento...' : `${dishes.length} piatti totali`}
         </p>
+        {error && (
+          <p className="text-xs text-destructive">Errore: {error}</p>
+        )}
       </div>
 
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-6">
-          {DISH_CATEGORIES.map(category => {
+          {DISH_CATEGORIES.map((category) => {
             const categoryDishes = getDishesForCategory(category.key);
-            
             return (
               <div key={category.key}>
                 <h3 className="category-header">{category.label}</h3>
@@ -190,8 +184,8 @@ export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {categoryDishes.map(dish => (
-                      <Card 
+                    {categoryDishes.map((dish) => (
+                      <Card
                         key={dish.id}
                         className={`cursor-pointer transition-all hover:shadow-md ${
                           isDishSelected(dish) ? 'menu-item-selected' : ''
@@ -201,7 +195,9 @@ export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
                         <CardContent className="p-3">
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
-                              <h4 className="font-medium text-sm">{dish.name}</h4>
+                              <h4 className="font-medium text-sm">
+                                {dish.name}
+                              </h4>
                               {dish.description && (
                                 <p className="text-xs text-muted-foreground mt-1">
                                   {dish.description}
