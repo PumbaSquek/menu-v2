@@ -5,8 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileText, Printer, Trash2, Euro, Calendar } from 'lucide-react';
 import { Dish, DISH_CATEGORIES } from '@/types';
+import { Dish, DISH_CATEGORIES, MenuDay } from '@/types';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { useUserStorage } from '@/hooks/useUserStorage';
 
 interface MenuBuilderProps {
   selectedDishes: Dish[];
@@ -21,6 +23,11 @@ export function MenuBuilder({
 }: MenuBuilderProps) {
   const [isExporting, setIsExporting] = useState(false);
 
+  // Salvataggio menu giornalieri per utente
+  const [menus, setMenus, { loading, error }] = useUserStorage<MenuDay[]>(
+    'menus',
+    []
+  );
   const getDishesForCategory = (category: string) => selectedDishes.filter(dish => dish.category === category);
   
   const getTotalPrice = () => selectedDishes.reduce((sum, dish) => sum + dish.price, 0);
@@ -206,6 +213,15 @@ export function MenuBuilder({
     printWindow.focus();
     printWindow.print();
     printWindow.close();
+
+      const nuovoMenu: MenuDay = {
+        id: Date.now().toString(),
+        date: new Date().toLocaleDateString('it-IT'), // data leggibile
+        createdAt: new Date().toISOString(),          // timestamp ISO
+        dishes: selectedDishes
+      };
+
+      setMenus([...menus, nuovoMenu]);
   };
 
   return (

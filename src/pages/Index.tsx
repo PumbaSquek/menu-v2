@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/LoginForm';
 import { Header } from '@/components/Header';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -85,15 +85,13 @@ function AppContent() {
   );
 }
 
-const Index = () => {
-  return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <AppContent />
-        <Toaster />
-      </AuthProvider>
-    </ErrorBoundary>
-  );
-};
+ const Index = () => {
+   return (
+     <ErrorBoundary>
+       <AppContent />
+       <Toaster />
+     </ErrorBoundary>
+   );
+ };
 
 export default Index;

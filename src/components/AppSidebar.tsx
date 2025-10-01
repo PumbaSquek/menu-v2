@@ -16,7 +16,9 @@ import { Plus, Trash2, Euro } from 'lucide-react';
 import { Dish, DishCategory, DISH_CATEGORIES } from '@/types';
 import { SAMPLE_DISHES } from '@/data/sampleDishes';
 import { useToast } from '@/hooks/use-toast';
-import { useFileStorage } from '@/hooks/useFileStorage';
+import { useUserStorage } from '@/hooks/useUserStorage';
+import { useAuth } from '@/hooks/useAuth';
+
 
 interface AppSidebarProps {
   onDishSelect: (dish: Dish) => void;
@@ -24,11 +26,15 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ onDishSelect, selectedDishes }: AppSidebarProps) {
-  // Persistenza su disco: data/dishes.json
-  const [dishes, setDishes, { loading, error }] = useFileStorage<Dish[]>(
-    'dishes',       // crea/legge data/dishes.json
-    SAMPLE_DISHES   // valore iniziale
-  );
+  const { user } = useAuth();
+  // Costruisci la chiave di salvataggio includendo l'ID utente
+  const storageKey = user ? `dishes_${user.id}` : 'dishes';
+
+  // Ora ogni utente avrà un proprio file: es. data/dishes_123.json
+const [dishes, setDishes, { loading, error }] = useUserStorage<Dish[]>(
+  'dishes',
+  SAMPLE_DISHES
+);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newDish, setNewDish] = useState({
     name: '',
